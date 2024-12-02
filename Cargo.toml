@@ -3,10 +3,14 @@ name = "advent-of-code2024"
 version = "0.1.0"
 edition = "2021"
 
+[dependencies]
+itertools = "0.13"
+rayon = "1"
+
 [[bin]]
 name = "day1"
 path = "src/day1.rs"
 
-[dependencies]
-itertools = "0.13"
-rayon = "1"
+[[bin]]
+name = "day2"
+path = "src/day2.rs"
