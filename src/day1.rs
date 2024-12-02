@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use itertools::Itertools;
 
 fn main() {
@@ -10,7 +8,7 @@ fn main() {
 }
 
 fn part1(input: &str) -> u32 {
-    let (mut left_values, mut right_values): (Vec<u32>, Vec<u32>) = split_columns(input).unzip();
+    let (mut left_values, mut right_values): (Vec<u32>, Vec<u32>) = parse_input(input).unzip();
 
     left_values.sort();
     right_values.sort();
@@ -23,22 +21,15 @@ fn part1(input: &str) -> u32 {
 }
 
 fn part2(input: &str) -> u32 {
-    let mut frequencies = HashMap::<u32, u32>::new();
-    let rows = split_columns(input).collect_vec();
-
-    for &(_, right) in &rows {
-        frequencies
-            .entry(right)
-            .and_modify(|count| *count += 1)
-            .or_insert(1);
-    }
+    let rows = parse_input(input).collect_vec();
+    let frequencies = rows.iter().counts_by(|&(_, right)| right);
 
     rows.into_iter()
-        .map(|(left, _)| left * frequencies.get(&left).copied().unwrap_or(0))
+        .map(|(left, _)| left * frequencies.get(&left).copied().unwrap_or(0) as u32)
         .sum()
 }
 
-fn split_columns(input: &str) -> impl Iterator<Item = (u32, u32)> + '_ {
+fn parse_input(input: &str) -> impl Iterator<Item = (u32, u32)> + '_ {
     input
         .lines()
         .map(|line| line.split_once("   ").unwrap())
