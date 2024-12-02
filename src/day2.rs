@@ -17,10 +17,12 @@ fn part2(input: &str) -> u32 {
     parse_input(input)
         .map(|report| {
             let report = report.collect_vec();
+            // Brute force all possible combinations with 1 element removed
             for i in 0..report.len() {
-                let mut cloned = report.clone();
-                cloned.remove(i);
-                if is_report_safe(cloned.iter().copied()) {
+                let mut without_i = report.clone();
+                without_i.remove(i);
+
+                if is_report_safe(without_i.iter().copied()) {
                     return 1;
                 }
             }
