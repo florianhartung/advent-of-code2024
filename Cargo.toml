@@ -6,6 +6,8 @@ edition = "2021"
 [dependencies]
 itertools = "0.13"
 rayon = "1"
+regex = "1"
+lazy_static = "1"
 
 [[bin]]
 name = "day1"
@@ -14,3 +16,7 @@ path = "src/day1.rs"
 [[bin]]
 name = "day2"
 path = "src/day2.rs"
+
+[[bin]]
+name = "day3"
+path = "src/day3.rs"
