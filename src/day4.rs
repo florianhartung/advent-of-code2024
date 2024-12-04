@@ -23,92 +23,22 @@ fn part1(input: &str) -> u32 {
 fn count_xmas_in_all_directions(input: &[[char; 140]; 140], x: usize, y: usize) -> u32 {
     const S: &str = "XMAS";
 
-    let right = S.chars().enumerate().all(|(i, c)| {
-        if let Some(line) = input.get(y) {
-            if line.get(x + i) == Some(&c) {
-                return true;
-            }
-        }
-        false
-    });
+    let get_val = |dx: isize, dy: isize| {
+        let x = x.checked_add_signed(dx)?;
+        let y = y.checked_add_signed(dy)?;
+        input.get(y).and_then(|line| line.get(x))
+    };
 
-    let left = S.chars().enumerate().all(|(i, c)| {
-        if let Some(line) = input.get(y) {
-            let Some(x_i) = x.checked_sub(i) else {
-                return false;
-            };
-            if line.get(x_i) == Some(&c) {
-                return true;
-            }
-        }
-        false
-    });
+    let chars = S.chars().enumerate().map(|(i, c)| (i as isize, c));
 
-    let up = S.chars().enumerate().all(|(i, c)| {
-        let Some(y_i) = y.checked_sub(i) else {
-            return false;
-        };
-        if let Some(line) = input.get(y_i) {
-            if line.get(x) == Some(&c) {
-                return true;
-            }
-        }
-        false
-    });
-
-    let down = S.chars().enumerate().all(|(i, c)| {
-        if let Some(line) = input.get(y + i) {
-            if line.get(x) == Some(&c) {
-                return true;
-            }
-        }
-        false
-    });
-
-    let top_left = S.chars().enumerate().all(|(i, c)| {
-        let Some(y_i) = y.checked_sub(i) else {
-            return false;
-        };
-        let Some(x_i) = x.checked_sub(i) else {
-            return false;
-        };
-        if let Some(line) = input.get(y_i) {
-            if line.get(x_i) == Some(&c) {
-                return true;
-            }
-        }
-        false
-    });
-    let top_right = S.chars().enumerate().all(|(i, c)| {
-        let Some(y_i) = y.checked_sub(i) else {
-            return false;
-        };
-        if let Some(line) = input.get(y_i) {
-            if line.get(x + i) == Some(&c) {
-                return true;
-            }
-        }
-        false
-    });
-    let bottom_left = S.chars().enumerate().all(|(i, c)| {
-        let Some(x_i) = x.checked_sub(i) else {
-            return false;
-        };
-        if let Some(line) = input.get(y + i) {
-            if line.get(x_i) == Some(&c) {
-                return true;
-            }
-        }
-        false
-    });
-    let bottom_right = S.chars().enumerate().all(|(i, c)| {
-        if let Some(line) = input.get(y + i) {
-            if line.get(x + i) == Some(&c) {
-                return true;
-            }
-        }
-        false
-    });
+    let right = chars.clone().all(|(i, c)| get_val(i, 0) == Some(&c));
+    let left = chars.clone().all(|(i, c)| get_val(-i, 0) == Some(&c));
+    let up = chars.clone().all(|(i, c)| get_val(0, -i) == Some(&c));
+    let down = chars.clone().all(|(i, c)| get_val(0, i) == Some(&c));
+    let top_left = chars.clone().all(|(i, c)| get_val(-i, -i) == Some(&c));
+    let top_right = chars.clone().all(|(i, c)| get_val(i, -i) == Some(&c));
+    let bottom_left = chars.clone().all(|(i, c)| get_val(-i, i) == Some(&c));
+    let bottom_right = chars.clone().all(|(i, c)| get_val(i, i) == Some(&c));
 
     [
         right,
@@ -131,62 +61,48 @@ fn part2(input: &str) -> u32 {
     let mut sum = 0;
     for y in 0..input.len() {
         for x in 0..input[0].len() {
-            if input[y][x] != 'A' {
+            let get_val = |dx: isize, dy: isize| {
+                let x = x.checked_add_signed(dx)?;
+                let y = y.checked_add_signed(dy)?;
+                input.get(y).and_then(|line| line.get(x))
+            };
+
+            let Some(&top_left) = get_val(-1, -1) else {
+                continue;
+            };
+            let Some(&top_right) = get_val(1, -1) else {
+                continue;
+            };
+            let Some(&bottom_left) = get_val(-1, 1) else {
+                continue;
+            };
+            let Some(&bottom_right) = get_val(1, 1) else {
+                continue;
+            };
+
+            // middle is always A
+            if get_val(0, 0) != Some(&'A') {
                 continue;
             }
 
-            let Some(x_i) = x.checked_sub(1) else {
-                continue;
-            };
-            let Some(y_i) = y.checked_sub(1) else {
-                continue;
-            };
-
             // left to right
-            if input.get(y_i).and_then(|line| line.get(x_i)) == Some(&'M') {
-                if input.get(y + 1).and_then(|line| line.get(x_i)) == Some(&'M') {
-                    if input.get(y_i).and_then(|line| line.get(x + 1)) == Some(&'S') {
-                        if input.get(y + 1).and_then(|line| line.get(x + 1)) == Some(&'S') {
-                            sum += 1;
-                            continue;
-                        }
-                    }
-                }
+            if top_left == 'M' && bottom_left == 'M' && top_right == 'S' && bottom_right == 'S' {
+                sum += 1;
             }
 
             // right to left
-            if input.get(y_i).and_then(|line| line.get(x_i)) == Some(&'S') {
-                if input.get(y + 1).and_then(|line| line.get(x_i)) == Some(&'S') {
-                    if input.get(y_i).and_then(|line| line.get(x + 1)) == Some(&'M') {
-                        if input.get(y + 1).and_then(|line| line.get(x + 1)) == Some(&'M') {
-                            sum += 1;
-                            continue;
-                        }
-                    }
-                }
+            if top_left == 'S' && bottom_left == 'S' && top_right == 'M' && bottom_right == 'M' {
+                sum += 1;
             }
 
             // top to bottom
-            if input.get(y_i).and_then(|line| line.get(x_i)) == Some(&'M') {
-                if input.get(y + 1).and_then(|line| line.get(x_i)) == Some(&'S') {
-                    if input.get(y_i).and_then(|line| line.get(x + 1)) == Some(&'M') {
-                        if input.get(y + 1).and_then(|line| line.get(x + 1)) == Some(&'S') {
-                            sum += 1;
-                            continue;
-                        }
-                    }
-                }
+            if top_left == 'M' && bottom_left == 'S' && top_right == 'M' && bottom_right == 'S' {
+                sum += 1;
             }
 
-            // top to bottom
-            if input.get(y_i).and_then(|line| line.get(x_i)) == Some(&'S') {
-                if input.get(y + 1).and_then(|line| line.get(x_i)) == Some(&'M') {
-                    if input.get(y_i).and_then(|line| line.get(x + 1)) == Some(&'S') {
-                        if input.get(y + 1).and_then(|line| line.get(x + 1)) == Some(&'M') {
-                            sum += 1;
-                        }
-                    }
-                }
+            // bottom to top
+            if top_left == 'S' && bottom_left == 'M' && top_right == 'S' && bottom_right == 'M' {
+                sum += 1;
             }
         }
     }
